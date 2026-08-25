@@ -71,14 +71,17 @@ export class SkySchoolCore {
     const enrollment = this.#enrollments.get(`${learner}:${course.id}`);
     if (!enrollment) throw new Error('learner is not enrolled');
     const completedLessons = course.lessonIds.filter((id) => enrollment.completed.has(id));
+    const courseComplete = completedLessons.length === course.lessonIds.length;
+    const roundedPercent = Math.round((completedLessons.length / course.lessonIds.length) * 100);
+    const percentComplete = courseComplete ? 100 : Math.min(99, roundedPercent);
     return Object.freeze({
       learnerId: learner,
       courseId: course.id,
       completedLessons: Object.freeze(completedLessons),
       completedCount: completedLessons.length,
       totalLessons: course.lessonIds.length,
-      percentComplete: Math.round((completedLessons.length / course.lessonIds.length) * 100),
-      courseComplete: completedLessons.length === course.lessonIds.length,
+      percentComplete,
+      courseComplete,
       certificateIssued: false
     });
   }
