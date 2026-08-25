@@ -22,6 +22,25 @@ test('registers courses and tracks deterministic progress', () => {
   assert.equal(progress.certificateIssued, false);
 });
 
+test('reserves 100 percent for actually completed courses', () => {
+  const school = new SkySchoolCore();
+  const lessonIds = Array.from({ length: 200 }, (_, index) => `lesson-${index + 1}`);
+  school.registerCourse({ id: 'large-course', title: 'Large Course', lessonIds });
+  school.enroll({ learnerId: 'learner-1', courseId: 'large-course' });
+
+  let progress;
+  for (const lessonId of lessonIds.slice(0, -1)) {
+    progress = school.completeLesson({ learnerId: 'learner-1', courseId: 'large-course', lessonId });
+  }
+  assert.equal(progress.completedCount, 199);
+  assert.equal(progress.percentComplete, 99);
+  assert.equal(progress.courseComplete, false);
+
+  progress = school.completeLesson({ learnerId: 'learner-1', courseId: 'large-course', lessonId: lessonIds.at(-1) });
+  assert.equal(progress.percentComplete, 100);
+  assert.equal(progress.courseComplete, true);
+});
+
 test('rejects duplicate courses and lesson identifiers', () => {
   const school = new SkySchoolCore();
   assert.throws(() => school.registerCourse({ id: 'bad', title: 'Bad', lessonIds: ['x', 'x'] }), /unique/);
