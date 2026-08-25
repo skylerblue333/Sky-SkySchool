@@ -1,44 +1,66 @@
-<!-- PORTFOLIO PROJECT PROFILE: maintained by the repository owner -->
+# SkySchool Core
 
-## Project profile and code-audit snapshot
+SkySchool Core is a dependency-free Node.js domain library for bounded course registration, learner enrollment, lesson completion, and deterministic progress calculation.
 
-**What this is:** **Sky-SkySchool** is a public repository described as: “Repository for the SkySchool component of the Sky ecosystem.” Its dominant language signals are **No dominant programming-language extension was detected in the sampled repository tree.**.
+## Status
 
-**Why it has value:** Its value is best understood through the implementation evidence currently present in the repository: **6 tracked files** were observed in the shallow audit, with the source structure and existing documentation providing the project’s specific context. This README does not treat a prototype, experiment, or archive as a production system without supporting evidence.
+**Engineering beta.** This repository implements a reusable learning-progress core. It does **not** claim to be a complete LMS, hosted school, student-information system, credential authority, payment platform, or production deployment.
 
-**Implementation evidence:** No test-related file was detected by filename heuristics.; No dependency manifest was detected.; No CI, build, Docker, or infrastructure signal was detected by the audit.; and 4 documentation or governance file(s) detected. Test filenames observed include none detected. Dependency or package files include none detected. Build, CI, or infrastructure signals include none detected.
+## Supported behavior
 
-**Current status:** The repository is tracked on the `main` branch. The existing source tree, configuration, tests, workflows, and documentation remain authoritative for supported behavior and maturity. A code audit is not a production-readiness certification, and the presence of a test or workflow file does not establish that all checks pass.
+- register courses with 1–200 unique lesson IDs;
+- bound the process-local catalog to 500 courses;
+- enroll learners idempotently;
+- complete only lessons that belong to an enrolled course;
+- calculate completed lesson count, percentage, and course-complete state deterministically;
+- explicitly report `certificateIssued: false` because certificate issuance is outside this core.
 
-**Relationship to the wider portfolio:** This repository is one focused component of the broader Skyler Blue Spillers portfolio across AI, software engineering, cloud and DevOps, cybersecurity, blockchain, finance, education, social systems, and creative work. It may provide a service boundary, implementation pattern, experiment, archive, or reusable idea for related repositories. Treat repositories as technical dependencies only where documented interfaces and verified project requirements support that relationship.
+## Example
 
-**Quality and security note:** No obvious secret-like pattern was detected by the limited static scan; this is not a substitute for a security audit. No TODO/FIXME marker was detected in the scanned text files.
+```js
+import { SkySchoolCore } from '@skycoin4444/skyschool-core';
 
----
+const school = new SkySchoolCore();
+school.registerCourse({
+  id: 'js-101',
+  title: 'JavaScript Basics',
+  lessonIds: ['intro', 'values']
+});
 
-# Sky Skyschool
+school.enroll({ learnerId: 'learner-1', courseId: 'js-101' });
+const progress = school.completeLesson({
+  learnerId: 'learner-1',
+  courseId: 'js-101',
+  lessonId: 'intro'
+});
 
-![GitHub stars](https://img.shields.io/github/stars/skylerblue333/Sky-SkySchool?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/skylerblue333/Sky-SkySchool?style=flat-square)
+console.log(progress.percentComplete); // 50
+```
 
-## 🌟 Overview
-**Sky-SkySchool** is a professional-grade project within the **SkyCoin4444** ecosystem. It focuses on delivering high-value solutions in the domain of **Software Development**.
+## Verification
 
-## 🚀 Key Features
-- **Scalable Architecture**: Designed for enterprise-level growth and performance.
-- **Modern Standards**: Implements best practices for clean code and maintainability.
-- **Robust Integration**: Built to work seamlessly within modern cloud-native environments.
+Requires Node.js 22 or newer.
 
-## 🛠️ Technology Stack
-- **Primary Domain**: Software Development
-- **Ecosystem**: SkyCoin4444 Digital Platform
+```bash
+npm ci
+npm run check
+npm test
+npm audit --omit=dev --audit-level=high
+npm run pack:check
+```
 
-## 📂 Structure
-The project is organized into a modular structure to ensure clarity and ease of development.
+GitHub Actions runs the same gates on pushes and pull requests.
 
-## 👨‍💻 Author
-**Skyler Blue Spillers**
-*Professional Chess Player & Software Engineer*
+## Architecture and integration
 
----
-*Powered by SkyCoin4444*
+`src/index.js` owns the domain invariants and has no network, database, or framework dependency. SKYCOIN4444 can consume it through a service adapter without copying the implementation. Persistence, authentication, authorization, classroom UI, assessments, grades, payments, messaging, analytics, and credential issuance belong in surrounding components with separately verified contracts.
+
+## Security and privacy boundary
+
+The library stores process-local learner/course identifiers only while the owning process is alive. It does not provide authentication, authorization, tenant isolation, encryption at rest, durable audit logging, FERPA/COPPA compliance controls, or privacy-policy enforcement. Do not treat arbitrary caller identifiers as verified identities.
+
+See `SECURITY.md` for vulnerability reporting guidance.
+
+## License
+
+MIT. See `LICENSE`.
