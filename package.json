@@ -1,0 +1,17 @@
+{
+  "name": "@skycoin4444/skyschool-core",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Dependency-free bounded course enrollment and progress core for SkySchool",
+  "exports": "./src/index.js",
+  "scripts": {
+    "check": "node --check src/index.js && node --check tests/index.test.js",
+    "test": "node --test",
+    "pack:check": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
+}
